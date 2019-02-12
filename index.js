@@ -14,6 +14,7 @@ function touchPinch (target) {
   var lastDistance = 0
   var ended = false
   var enabled = false
+  var center = [0, 0]
 
   // some read-only values
   Object.defineProperties(emitter, {
@@ -61,6 +62,7 @@ function touchPinch (target) {
     fingers[1] = null
     lastDistance = 0
     ended = false
+    center = [0, 0]
     target.removeEventListener('touchstart', onTouchStart, false)
     target.removeEventListener('touchmove', onTouchMove, false)
     target.removeEventListener('touchend', onTouchRemoved, false)
@@ -94,6 +96,7 @@ function touchPinch (target) {
 
         if (!first) {
           var initialDistance = computeDistance()
+          center = computeCenter()
           ended = false
           emitter.emit('start', initialDistance)
           lastDistance = initialDistance
@@ -116,7 +119,7 @@ function touchPinch (target) {
 
     if (activeCount === 2 && changed) {
       var currentDistance = computeDistance()
-      emitter.emit('change', currentDistance, lastDistance)
+      emitter.emit('change', currentDistance, lastDistance, center)
       lastDistance = currentDistance
     }
   }
@@ -144,6 +147,12 @@ function touchPinch (target) {
   function computeDistance () {
     if (activeCount < 2) return 0
     return getDistance(fingers[0].position, fingers[1].position)
+  }
+  
+  function computeCenter () {
+    if (activeCount < 2) return [0, 0]
+    var p1 = fingers[0].position, p2 = fingers[1].position
+    return [(p1[0] - p2[0]) * 0.5 + p2[0], (p1[1] - p2[1]) * 0.5 + p2[1]]
   }
 }
 
